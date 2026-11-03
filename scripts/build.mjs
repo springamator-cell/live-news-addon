@@ -83,6 +83,13 @@ async function resolve(channel) {
   if (watch && /"isLiveNow":true/.test(livePage)) {
     live = { id: watch[1], title: metaTag(livePage, 'name', 'title') || `${channel.name} live` };
   }
+  if (process.env.DEBUG_LIVE) {
+    const canon = (livePage.match(/<link rel="canonical" href="([^"]+)"/) || [])[1];
+    const flags = ['"isLiveNow":true', '"isLive":true', '"isLiveContent":true', 'consent.youtube.com', 'og:url']
+      .filter((f) => livePage.includes(f));
+    const vids = [...new Set((livePage.match(/"videoId":"([\w-]{11})"/g) || []).slice(0, 3))];
+    console.log(`  debug ${channel.name}: len=${livePage.length} canonical=${canon} flags=${flags.join(',')} vids=${vids.join(' ')}`);
+  }
 
   let clips = [];
   try {
