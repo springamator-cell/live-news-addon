@@ -57,18 +57,26 @@ function parseFeed(xml) {
   })).filter((v) => v.id);
 }
 
-// The /live page embeds the player's "videoDetails" block. A channel is live when that
-// block belongs to the channel itself (pages also carry other channels' videos) and
-// is marked as live.
+// A channel's /live page shows its current live stream. It counts as live when the main
+// video is marked live with people watching (scheduled streams show "waiting" and an
+// offline status instead). The video ID comes from the player's "videoDetails" block that
+// belongs to this channel, since pages also carry other channels' videos.
 function findLive(html, channelId) {
+  if (html.includes('LIVE_STREAM_OFFLINE')) return null;
+  const at = html.indexOf('"videoPrimaryInfoRenderer"');
+  if (at < 0) return null;
+  const info = html.slice(at, at + 3000);
+  if (!info.includes('"isLive":true') || !info.includes('watching')) return null;
+
   const re = /"videoDetails":\{"videoId":"([\w-]{11})"/g;
   let m;
   while ((m = re.exec(html))) {
     const chunk = html.slice(m.index, m.index + 20000);
     const end = chunk.indexOf('"videoDetails"', 20);
     const details = end > 0 ? chunk.slice(0, end) : chunk;
-    if (details.includes(`"channelId":"${channelId}"`) && details.includes('"isLive":true')) {
-      const t = details.match(/"title":"((?:[^"\\]|\\.)*)"/);
+    if (details.includes(`"channelId":"${channelId}"`)) {
+      const t = info.match(/"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/)
+        || details.match(/"title":"((?:[^"\\]|\\.)*)"/);
       let title = null;
       try { title = t ? JSON.parse(`"${t[1]}"`) : null; } catch { title = null; }
       return { id: m[1], title: title || 'Live now' };

@@ -1,7 +1,7 @@
 {
   "groups": ["US", "International", "Local"],
   "channels": [
-    { "id": "livenow-fox", "name": "LiveNOW from FOX", "handle": "@LiveNOWfromFOX", "group": "US" },
+    { "id": "livenow-fox", "name": "LiveNOW from FOX", "handle": "@LiveNOWFOX", "group": "US" },
     { "id": "fox-weather", "name": "FOX Weather", "handle": "@FoxWeather", "group": "US" },
     { "id": "nbc-news", "name": "NBC News NOW", "handle": "@NBCNews", "group": "US" },
     { "id": "abc-news", "name": "ABC News Live", "handle": "@ABCNews", "group": "US" },
