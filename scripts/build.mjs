@@ -106,19 +106,31 @@ async function resolve(channel) {
 
   const livePage = await get(`${base}/live`);
   const live = findLive(livePage, channelId);
-  if (process.env.DEBUG_LIVE) {
-    console.log(`  debug ${channel.name}: page="${metaTag(page, 'property', 'og:title')}" id=${channelId} live=${live ? live.id : '-'}`);
-  }
 
-  let clips = [];
+  let clips;
   try {
     const feed = await get(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
-    clips = parseFeed(feed).filter((v) => !live || v.id !== live.id).slice(0, CLIPS);
+    clips = parseFeed(feed)
+      .filter((v) => !live || v.id !== live.id)
+      .slice(0, CLIPS)
+      .map((v) => ({ ytId: v.id, name: channel.name, title: `${v.title}\n${shortDate(v.published)}` }));
   } catch (e) {
-    console.warn(`  ${channel.name}: no recent videos (${e.message})`);
+    // YouTube's feed fails now and then; reuse the clips from the last published update.
+    clips = (await previousClips(ID_PREFIX + channel.id)).filter((s) => !live || s.ytId !== live.id);
+    console.warn(`  ${channel.name}: feed unavailable (${e.message}); reused ${clips.length} earlier clips`);
   }
 
   return { channelId, avatar, live, clips, url: base };
+}
+
+async function previousClips(id) {
+  if (!BASE_URL) return [];
+  try {
+    const data = JSON.parse(await get(`${BASE_URL}/stream/tv/${id}.json`, 1));
+    return (data.streams || []).filter((s) => s.ytId && s.name !== '🔴 LIVE');
+  } catch {
+    return [];
+  }
 }
 
 async function write(file, data) {
@@ -148,7 +160,7 @@ const metas = [];
 for (const r of usable) {
   const { channel, live, clips, avatar } = r;
   const id = ID_PREFIX + channel.id;
-  const backdropId = live ? live.id : clips[0]?.id;
+  const backdropId = live ? live.id : clips[0]?.ytId;
   const meta = {
     id,
     type: 'tv',
@@ -167,9 +179,7 @@ for (const r of usable) {
 
   const streams = [];
   if (live) streams.push({ ytId: live.id, name: '🔴 LIVE', title: live.title });
-  for (const v of clips) {
-    streams.push({ ytId: v.id, name: channel.name, title: `${v.title}\n${shortDate(v.published)}` });
-  }
+  streams.push(...clips);
   streams.push({
     externalUrl: live ? `https://www.youtube.com/watch?v=${live.id}` : r.url,
     name: 'YouTube',
