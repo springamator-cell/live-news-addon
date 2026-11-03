@@ -57,6 +57,26 @@ function parseFeed(xml) {
   })).filter((v) => v.id);
 }
 
+// The /live page embeds the player's "videoDetails" block. A channel is live when that
+// block belongs to the channel itself (pages also carry other channels' videos) and
+// is marked as live.
+function findLive(html, channelId) {
+  const re = /"videoDetails":\{"videoId":"([\w-]{11})"/g;
+  let m;
+  while ((m = re.exec(html))) {
+    const chunk = html.slice(m.index, m.index + 20000);
+    const end = chunk.indexOf('"videoDetails"', 20);
+    const details = end > 0 ? chunk.slice(0, end) : chunk;
+    if (details.includes(`"channelId":"${channelId}"`) && details.includes('"isLive":true')) {
+      const t = details.match(/"title":"((?:[^"\\]|\\.)*)"/);
+      let title = null;
+      try { title = t ? JSON.parse(`"${t[1]}"`) : null; } catch { title = null; }
+      return { id: m[1], title: title || 'Live now' };
+    }
+  }
+  return null;
+}
+
 const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
 
 function shortDate(iso) {
@@ -77,18 +97,10 @@ async function resolve(channel) {
   if (!channelId) throw new Error('could not find the YouTube channel ID');
   const avatar = metaTag(page, 'property', 'og:image');
 
-  let live = null;
   const livePage = await get(`${base}/live`);
-  const watch = livePage.match(/<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/);
-  if (watch && /"isLiveNow":true/.test(livePage)) {
-    live = { id: watch[1], title: metaTag(livePage, 'name', 'title') || `${channel.name} live` };
-  }
+  const live = findLive(livePage, channelId);
   if (process.env.DEBUG_LIVE) {
-    const canon = (livePage.match(/<link rel="canonical" href="([^"]+)"/) || [])[1];
-    const flags = ['"isLiveNow":true', '"isLive":true', '"isLiveContent":true', 'consent.youtube.com', 'og:url']
-      .filter((f) => livePage.includes(f));
-    const vids = [...new Set((livePage.match(/"videoId":"([\w-]{11})"/g) || []).slice(0, 3))];
-    console.log(`  debug ${channel.name}: len=${livePage.length} canonical=${canon} flags=${flags.join(',')} vids=${vids.join(' ')}`);
+    console.log(`  debug ${channel.name}: page="${metaTag(page, 'property', 'og:title')}" id=${channelId} live=${live ? live.id : '-'}`);
   }
 
   let clips = [];

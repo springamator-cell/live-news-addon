@@ -10,7 +10,7 @@
     { "id": "bloomberg", "name": "Bloomberg Television", "handle": "@markets", "group": "US" },
     { "id": "sky-news", "name": "Sky News", "handle": "@SkyNews", "group": "International" },
     { "id": "dw-news", "name": "DW News", "handle": "@dwnews", "group": "International" },
-    { "id": "france24", "name": "FRANCE 24 English", "handle": "@FRANCE24English", "group": "International" },
+    { "id": "france24", "name": "FRANCE 24 English", "channelId": "UCQfwfsi5VrQ8yKZ-UWmAEFg", "group": "International" },
     { "id": "al-jazeera", "name": "Al Jazeera English", "handle": "@aljazeeraenglish", "group": "International" },
     { "id": "euronews", "name": "Euronews", "handle": "@euronews", "group": "International" },
     { "id": "krem", "name": "KREM 2 News (Spokane)", "channelId": "UCExxWMXIf8UR5xb4eQTdh7A", "group": "Local" }
