@@ -3,7 +3,7 @@
 // live stream and its latest uploads (from YouTube's public RSS feed).
 // GitHub Actions runs this on a schedule and publishes dist/ to GitHub Pages.
 
-import { mkdir, writeFile, readFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, rm, cp } from 'node:fs/promises';
 import path from 'node:path';
 
 const OUT = 'dist';
@@ -264,3 +264,6 @@ li:first-child{border-top:0}.s{color:var(--mut);white-space:nowrap}small{display
 </main></body></html>`);
 
 console.log(`\n${metas.length} channels published, ${metas.filter((m) => m.releaseInfo === '🔴 LIVE').length} live.`);
+
+// Nuvio badge images (Apple TV–style), served at <site>/badges/<filter-id>.png
+await cp('badges', path.join(OUT, 'badges'), { recursive: true });
