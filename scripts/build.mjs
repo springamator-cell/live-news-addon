@@ -20,10 +20,17 @@ const HEADERS = {
 
 const config = JSON.parse(await readFile('channels.json', 'utf8'));
 
-async function get(url) {
-  const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
-  if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-  return res.text();
+async function get(url, tries = 3) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const res = await fetch(url, { headers: HEADERS, redirect: 'follow' });
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+      return await res.text();
+    } catch (e) {
+      if (attempt >= tries) throw e;
+      await new Promise((r) => setTimeout(r, 1500 * attempt));
+    }
+  }
 }
 
 const decode = (s) => s
@@ -59,30 +66,22 @@ function parseFeed(xml) {
 
 // A channel's /live page shows its current live stream. It counts as live when the main
 // video is marked live with people watching (scheduled streams show "waiting" and an
-// offline status instead). The video ID comes from the player's "videoDetails" block that
-// belongs to this channel, since pages also carry other channels' videos.
+// offline status instead) and the video's owner is this channel.
 function findLive(html, channelId) {
   if (html.includes('LIVE_STREAM_OFFLINE')) return null;
-  const at = html.indexOf('"videoPrimaryInfoRenderer"');
+  const at = html.indexOf('{"videoPrimaryInfoRenderer":');
   if (at < 0) return null;
   const info = html.slice(at, at + 3000);
   if (!info.includes('"isLive":true') || !info.includes('watching')) return null;
+  if (!html.slice(at, at + 40000).includes(`"${channelId}"`)) return null;
 
-  const re = /"videoDetails":\{"videoId":"([\w-]{11})"/g;
-  let m;
-  while ((m = re.exec(html))) {
-    const chunk = html.slice(m.index, m.index + 20000);
-    const end = chunk.indexOf('"videoDetails"', 20);
-    const details = end > 0 ? chunk.slice(0, end) : chunk;
-    if (details.includes(`"channelId":"${channelId}"`)) {
-      const t = info.match(/"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/)
-        || details.match(/"title":"((?:[^"\\]|\\.)*)"/);
-      let title = null;
-      try { title = t ? JSON.parse(`"${t[1]}"`) : null; } catch { title = null; }
-      return { id: m[1], title: title || 'Live now' };
-    }
-  }
-  return null;
+  const ep = html.match(/"currentVideoEndpoint":\{[\s\S]{0,800}?"watchEndpoint":\{"videoId":"([\w-]{11})"/);
+  if (!ep) return null;
+
+  const t = info.match(/"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/);
+  let title = null;
+  try { title = t ? JSON.parse(`"${t[1]}"`) : null; } catch { title = null; }
+  return { id: ep[1], title: title || 'Live now' };
 }
 
 const thumb = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
