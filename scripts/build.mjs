@@ -153,7 +153,8 @@ for (const channel of config.channels) {
   }
 }
 
-const usable = results.filter((r) => !r.error && (r.live || r.clips.length));
+// Every channel that resolved stays listed, even with nothing to play right now.
+const usable = results.filter((r) => !r.error);
 usable.sort((a, b) => (b.live ? 1 : 0) - (a.live ? 1 : 0));
 
 const metas = [];
@@ -170,10 +171,12 @@ for (const r of usable) {
     logo: avatar || undefined,
     background: backdropId ? thumb(backdropId) : undefined,
     genres: [channel.group],
-    releaseInfo: live ? '🔴 LIVE' : 'Recent videos',
+    releaseInfo: live ? '🔴 LIVE' : clips.length ? 'Recent videos' : 'Off air',
     description: live
       ? `🔴 Live now: ${live.title}`
-      : `Not live right now. ${clips.length} recent videos available.`
+      : clips.length
+        ? `Not live right now. ${clips.length} recent videos available.`
+        : 'Not live right now. Live broadcasts appear here when they start.'
   };
   metas.push(meta);
 
