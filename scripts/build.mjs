@@ -200,9 +200,9 @@ for (const group of config.groups) {
 
 const manifest = {
   id: 'community.springamator.livenews',
-  version: '1.0.0',
+  version: '1.1.0',
   name: 'Live News',
-  description: 'Free, official live news streams and the latest clips from US, international and local channels.',
+  description: 'Free, official live streams and the latest clips from KREM 2, CNN, LiveNOW from FOX, ABC News and PickleballTV.',
   resources: ['catalog', 'meta', 'stream'],
   types: ['tv'],
   idPrefixes: [ID_PREFIX],

@@ -1,18 +1,10 @@
 {
-  "groups": ["US", "International", "Local"],
+  "groups": ["News", "Local", "Sports"],
   "channels": [
-    { "id": "livenow-fox", "name": "LiveNOW from FOX", "handle": "@LiveNOWFOX", "group": "US" },
-    { "id": "fox-weather", "name": "FOX Weather", "handle": "@FoxWeather", "group": "US" },
-    { "id": "nbc-news", "name": "NBC News NOW", "handle": "@NBCNews", "group": "US" },
-    { "id": "abc-news", "name": "ABC News Live", "handle": "@ABCNews", "group": "US" },
-    { "id": "cbs-news", "name": "CBS News 24/7", "handle": "@CBSNews", "group": "US" },
-    { "id": "pbs-newshour", "name": "PBS NewsHour", "handle": "@PBSNewsHour", "group": "US" },
-    { "id": "bloomberg", "name": "Bloomberg Television", "handle": "@markets", "group": "US" },
-    { "id": "sky-news", "name": "Sky News", "handle": "@SkyNews", "group": "International" },
-    { "id": "dw-news", "name": "DW News", "handle": "@dwnews", "group": "International" },
-    { "id": "france24", "name": "FRANCE 24 English", "channelId": "UCQfwfsi5VrQ8yKZ-UWmAEFg", "group": "International" },
-    { "id": "al-jazeera", "name": "Al Jazeera English", "handle": "@aljazeeraenglish", "group": "International" },
-    { "id": "euronews", "name": "Euronews", "handle": "@euronews", "group": "International" },
-    { "id": "krem", "name": "KREM 2 News (Spokane)", "channelId": "UCExxWMXIf8UR5xb4eQTdh7A", "group": "Local" }
+    { "id": "krem", "name": "KREM 2 News (Spokane)", "channelId": "UCExxWMXIf8UR5xb4eQTdh7A", "group": "Local" },
+    { "id": "cnn", "name": "CNN", "handle": "@CNN", "group": "News" },
+    { "id": "livenow-fox", "name": "LiveNOW from FOX", "handle": "@LiveNOWFOX", "group": "News" },
+    { "id": "abc-news", "name": "ABC News Live", "handle": "@ABCNews", "group": "News" },
+    { "id": "pickleballtv", "name": "PickleballTV", "handle": "@PickleballTV", "group": "Sports" }
   ]
 }
